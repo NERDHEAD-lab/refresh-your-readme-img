@@ -1,4 +1,7 @@
 {
+  "name": "refresh-your-readme-img",
+  "main": "script/refreshCamo.js",
+  "type": "module",
   "scripts": {
     "refreshCamo": "node script/refreshCamo.js"
   },

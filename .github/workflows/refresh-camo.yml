@@ -16,6 +16,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Get repo info
+        id: repoInfo
+        run: |
+          echo "REPO_PATH=${{ github.repository }}" >> $GITHUB_ENV
+          echo "BRANCH_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -26,9 +32,8 @@ jobs:
         run: npm ci
 
       - name: Run refreshCamo (with workflow input)
+        env:
+          README_URL: ${{ github.event.inputs.readme_url }}
         run: |
-          if [ -z "${{ github.event.inputs.readme_url }}" ]; then
-            npm run refreshCamo
-          else
-            npm run refreshCamo -- ${{ github.event.inputs.readme_url }}
-          fi
+          URL="https://github.com/$REPO_PATH/blob/$BRANCH_NAME/README.md"
+          npm run refreshCamo -- "$URL"
