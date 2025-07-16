@@ -23,11 +23,19 @@ console.log(`Using README URL: ${url}`);
     await browser.close();
 
     console.log(`Found ${camoUrls.length} camo images`);
+
+    printCamoUrlCachedAge(camoUrls);
+    purgeTargetCamoUrls(camoUrls);
+})();
+
+function purgeTargetCamoUrls(camoUrls) {
+    if (camoUrls.length !== 0) {
+        console.log('Purging camo images...');
+    }
     for (const camoUrl of camoUrls) {
         try {
-            console.log(`PURGE: ${camoUrl}`);
-            // curl -X PURGE 실행
-            const result = execSync(`curl -X PURGE ${camoUrl}`);
+            console.log(`- PURGE: ${camoUrl}`);
+            const result = execSync(`curl -s -X PURGE ${camoUrl}`);
             const status = result.toString().trim();
             console.log(`    → HTTP status: ${status}`);
         } catch (e) {
@@ -35,8 +43,8 @@ console.log(`Using README URL: ${url}`);
             throw e;
         }
     }
-})();
-
+    console.log('\nAll camo images purged successfully.');
+}
 
 function getDefaultReadmeUrl() {
     try {
@@ -53,6 +61,45 @@ function getDefaultReadmeUrl() {
     } catch (e) {
         console.error('Cannot get origin URL or branch. Please specify url manually.');
         process.exit(1);
+    }
+}
+
+function printCamoUrlCachedAge(camoUrls) {
+    if (camoUrls.length !== 0) {
+        console.log('\nCamo image cache age:');
+    }
+    for (const camoUrl of camoUrls) {
+        let ageSec = null;
+        let dateStr = null;
+        try {
+            const header = execSync(`curl -sI "${camoUrl}"`).toString();
+            const ageMatch = header.match(/age: (\d+)/i);
+            if (ageMatch) ageSec = parseInt(ageMatch[1], 10);
+            const dateMatch = header.match(/date: (.+)/i);
+            if (dateMatch) dateStr = dateMatch[1].trim();
+        } catch (e) {
+            console.log(`- Failed to fetch headers: ${camoUrl}`);
+        }
+
+        let ageMsg = '';
+        if (ageSec != null) {
+            const hours = Math.floor(ageSec / 3600);
+            const mins = Math.floor((ageSec % 3600) / 60);
+            const secs = ageSec % 60;
+            ageMsg = `Cached ${hours}h ${mins}m ${secs}s ago`;
+            if (dateStr) {
+                const cachedDate = new Date(new Date(dateStr).getTime() - ageSec * 1000);
+                ageMsg += ` (cached at: ${cachedDate.toISOString().replace('T', ' ').slice(0, 19)})`;
+            }
+        } else {
+            ageMsg = 'No cache age info found';
+        }
+
+        console.log(`- Image: ${camoUrl}`);
+        console.log(`  ${ageMsg}`);
+    }
+    if (camoUrls.length !== 0) {
+        console.log('');
     }
 }
 
