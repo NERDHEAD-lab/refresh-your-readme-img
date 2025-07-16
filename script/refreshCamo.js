@@ -2,6 +2,8 @@ import puppeteer from "puppeteer";
 import {execSync} from "child_process";
 
 const url = process.env.README_URL || process.argv[2] || getDefaultReadmeUrl();
+printPriority();
+console.log(`Using README URL: ${url}`);
 
 (async () => {
     console.log(`Refreshing camo images from ${url}...`);
@@ -52,4 +54,15 @@ function getDefaultReadmeUrl() {
         console.error('Cannot get origin URL or branch. Please specify url manually.');
         process.exit(1);
     }
+}
+
+function printPriority() {
+    let selected = 'default [current Repository README.md]';
+    if (process.env.README_URL) {
+        selected = 'env variable [README_URL]';
+    } else if (process.argv[2]) {
+        selected = 'command line argument [0]';
+    }
+
+    console.log(`Using ${selected} for README URL`);
 }
