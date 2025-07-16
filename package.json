@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "refreshCamo": "node script/refreshCamo.js"
+  },
+  "devDependencies": {
+    "puppeteer": "^24.13.0"
+  }
+}

@@ -1,0 +1,34 @@
+name: Refresh Camo Cache
+
+on:
+  workflow_dispatch:
+    inputs:
+      readme_url:
+        description: "GitHub URL containing markdown content and images (e.g. https://github.com/OWNER/REPO/blob/main/README.md)"
+        required: false
+        default: ''
+
+jobs:
+  refresh-camo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run refreshCamo (with workflow input)
+        run: |
+          if [ -z "${{ github.event.inputs.readme_url }}" ]; then
+            npm run refreshCamo
+          else
+            npm run refreshCamo -- ${{ github.event.inputs.readme_url }}
+          fi
